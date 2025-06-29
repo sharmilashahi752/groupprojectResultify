@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resultify - Home</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- AOS Animation -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --blue: #3D5AFE;
+      --purple: #9C27B0;
+      --accent-purple: #BA68C8;
+      --light-bg: #E8EEFF;
+      --white: #FFFFFF;
+      --dark-bg: #1f1f2e;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f0ff, #e6e9ff);
+      margin: 0;
+      color: #333;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body.dark-mode {
+      background: #1f1f2e;
+      color: #e0e0e0;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: linear-gradient(90deg, #9C27B0, #BA68C8);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .navbar-brand img {
+      height: 60px;
+      border-radius: 50%;
+    }
+
+    .nav-link,
+    .navbar-brand {
+      color: #fff !important;
+      font-weight: 600;
+    }
+
+    .nav-link:hover {
+      color: #ffd700 !important;
+    }
+
+    .toggle-dark {
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: #fff;
+      margin-left: 1rem;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-dark i {
+      transition: transform 0.4s ease, opacity 0.3s ease;
+    }
+
+    .toggle-dark i.animate {
+      transform: rotate(180deg);
+      opacity: 0.8;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #9C27B0 0%, #E8EEFF 100%);
+      color: white;
+      text-align: center;
+      padding: 130px 20px;
+      position: relative;
+      border-radius: 0 0 40px 40px;
+      box-shadow: 0 8px 25px rgba(156, 39, 176, 0.3);
+      transition: background 0.3s ease;
+    }
+
+    .dark-mode .hero {
+      background: linear-gradient(135deg, #6a1b9a, #4a148c);
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-shadow: 1px 1px 6px rgba(0,0,0,0.3);
+    }
+
+    .btn-hero {
+      background: linear-gradient(90deg, #BA68C8, #9C27B0);
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 40px;
+      border: none;
+      font-weight: bold;
+      box-shadow: 0 0 15px #BA68C8;
+      transition: 0.4s ease;
+    }
+
+    .btn-hero:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px #BA68C8;
+    }
+
+    /* Section Titles */
+    .section-title {
+      font-weight: 700;
+      background: linear-gradient(90deg, #9C27B0, #BA68C8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Feature Cards */
+    .feature-card {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .features-icon {
+      font-size: 3rem;
+      color: var(--accent-purple);
+    }
+
+    /* Footer */
+    footer {
+      background: linear-gradient(to right, #232526, #414345);
+      color: #ccc;
+      padding: 30px 0;
+    }
+
+    footer a {
+      color: #bbb;
+    }
+
+    footer a:hover {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <img src="images/logo3.png" alt="Resultify Logo" />
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+        <!-- <li class="nav-item"><a class="nav-link" href="admin/login.php">Admin</a></li>
+        <li class="nav-item"><a class="nav-link" href="student/login.php">Student</a></li>
+        <li class="nav-item"><a class="nav-link" href="university/login.php">University</a></li> -->
+         <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li> 
+       <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
+
+
+        <li class="nav-item toggle-dark" onclick="toggleDarkMode()">
+          <i id="mode-icon" class="bi bi-sun-fill"></i>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container" data-aos="fade-up">
+    <h1>Empower Results. Inspire Futures.</h1>
+    <p class="lead mb-4">Fast, Accurate & Beautiful Result Management</p>
+    <a href="student/login.php" class="btn btn-hero">Check Result</a>
+  </div>
+</section>
+
+<!-- About Section -->
+<section class="py-5 bg-white" id="about">
+  <div class="container text-center" data-aos="fade-right">
+    <h2 class="section-title mb-3">What is Resultify?</h2>
+    <p class="text-muted">A dynamic result management system that enables real-time marksheet generation, performance tracking, and secure multi-role access for students, admin, and university staff. All in a beautiful UI.</p>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5" id="features">
+  <div class="container">
+    <h2 class="text-center section-title mb-5" data-aos="fade-up">Why Choose Resultify?</h2>
+    <div class="row g-4">
+      <div class="col-md-4" data-aos="zoom-in">
+        <div class="feature-card text-center">
+          <div class="features-icon mb-3"><i class="bi bi-bar-chart-fill"></i></div>
+          <h5>Performance Analytics</h5>
+          <p class="text-muted">Visualize marks and progress using interactive charts and color-coded feedback.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="zoom-in" data-aos-delay="150">
+        <div class="feature-card text-center">
+          <div class="features-icon mb-3"><i class="bi bi-filetype-pdf"></i></div>
+          <h5>Marksheet Generator</h5>
+          <p class="text-muted">Create & download clean, printable PDF results instantly with breakdowns.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
+        <div class="feature-card text-center">
+          <div class="features-icon mb-3"><i class="bi bi-lock-fill"></i></div>
+          <h5>Secure Multi-Login</h5>
+          <p class="text-muted">Separate portals with login security for students, faculty, and administrators.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="py-5 bg-white">
+  <div class="container text-center" data-aos="fade-up">
+    <h2 class="section-title mb-3">Let's Connect</h2>
+    <p>Email: <a href="mailto:support@resultify.com">support@resultify.com</a><br>
+    Phone: +977-9800000000</p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="text-center">
+  <div class="container">
+    <p>&copy; 2025 Resultify. Built with ❤️ for academic excellence.</p>
+  </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({ duration: 1000, once: true });
+
+  function toggleDarkMode() {
+    const body = document.body;
+    const icon = document.getElementById('mode-icon');
+    icon.classList.add('animate');
+    body.classList.toggle('dark-mode');
+
+    setTimeout(() => {
+      if (body.classList.contains('dark-mode')) {
+        icon.classList.remove('bi-sun-fill');
+        icon.classList.add('bi-moon-fill');
+      } else {
+        icon.classList.remove('bi-moon-fill');
+        icon.classList.add('bi-sun-fill');
+      }
+      icon.classList.remove('animate');
+    }, 300); // animation timing
+  }
+
+  // On page load, set initial icon
+  window.addEventListener('DOMContentLoaded', () => {
+    const icon = document.getElementById('mode-icon');
+    if (document.body.classList.contains('dark-mode')) {
+      icon.classList.remove('bi-sun-fill');
+      icon.classList.add('bi-moon-fill');
+    } else {
+      icon.classList.remove('bi-moon-fill');
+      icon.classList.add('bi-sun-fill');
+    }
+  });
+</script>
+
+</p>
+</body>
+</html>
