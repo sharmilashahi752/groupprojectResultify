@@ -1,290 +1,213 @@
 <?php
 session_start();
 
-$_SESSION['role'] = 'student';
-$_SESSION['student_id'] = 1;
-$_SESSION['student_name'] = 'Sonu Shahi';
-
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
-    header("Location: ../login.php");
-    exit();
+// Redirect if not logged in or not a student
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'student') {
+  header("Location: login.php");
+  exit();
 }
 
-$studentId = $_SESSION['student_id'];
-$studentName = $_SESSION['student_name'];
-
-$conn = new mysqli("localhost", "root", "", "resultify_db");
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-$sql = "SELECT subject, marks, grade, remarks FROM results WHERE student_id = $studentId";
-$result = $conn->query($sql);
-
-$subjects = [];
-$marks = [];
+// Optional: sample student data (replace with DB data)
+$studentName = htmlspecialchars($_SESSION['user']['username']);
+$gpa = 3.8;
+$totalCredits = 110;
+$completedCourses = 32;
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Student Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Dashboard - Resultify</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary: #7b1fa2;
-      --secondary: #ce93d8;
-      --accent: #f3e5f5;
-      --text-dark: #333;
-      --text-light: #fff;
+      --bg-light: #f3f0ff;
+      --bg-dark: #1e1e2f;
+      --sidebar-light: linear-gradient(180deg, #6f42c1, #a066df);
+      --sidebar-dark: #151520;
+      --text-light: #212529;
+      --text-dark: #f8f9fa;
     }
-
     body {
-      background: linear-gradient(135deg, #fefefe, #f3e5f5);
       font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    body.dark {
+      background: var(--bg-dark);
       color: var(--text-dark);
     }
-
-    .navbar {
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-    }
-
-    .navbar-brand, .nav-link, .dropdown-toggle {
-      color: #fff !important;
-      font-weight: 600;
-    }
-
-    .dropdown-menu {
-      background-color: #fff;
-      border: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .dropdown-menu a {
-      color: var(--text-dark);
-    }
-
-    .card {
-      border-radius: 15px;
-      transition: transform 0.3s ease;
-      background: #fff;
-      border: none;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    }
-
-    .card:hover {
-      transform: scale(1.01);
-    }
-
-    .table thead {
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      color: white;
-    }
-
-    .table-success {
-      background-color: #e8f5e9;
-    }
-
-    .grade-badge {
-      padding: 5px 10px;
-      border-radius: 10px;
+    .sidebar {
+      background: var(--sidebar-light);
       color: #fff;
-      font-weight: bold;
-      animation: bounce 2s infinite;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
-    }
-
-    .grade-Aplus { background-color: #4caf50; }
-    .grade-A { background-color: #8bc34a; }
-    .grade-Bplus { background-color: #cddc39; }
-    .grade-B { background-color: #ffc107; }
-    .grade-C { background-color: #ff9800; }
-    .grade-D { background-color: #ff5722; }
-    .grade-F { background-color: #f44336; }
-
-    .notice-board {
-      background-color: #ffffff;
-      border-radius: 12px;
+      width: 240px;
+      height: 100vh;
+      position: fixed;
       padding: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+      z-index: 1000;
     }
-    .notice-item {
-      background: #fafafa;
-      padding: 10px 15px;
-      border-left: 5px solid var(--primary);
-      margin-bottom: 10px;
-      border-radius: 8px;
+    body.dark .sidebar {
+      background: var(--sidebar-dark);
+    }
+    .sidebar a {
+      color: #e0d6f2;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 0;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    .sidebar a:hover {
+      color: #fff;
+      transform: translateX(5px);
+    }
+    .content {
+      margin-left: 260px;
+      padding: 40px;
+      transition: margin 0.3s ease;
+    }
+    .hamburger {
+      font-size: 24px;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1100;
+      cursor: pointer;
+      color: var(--text-light);
+      transition: color 0.3s;
+    }
+    body.dark .hamburger {
+      color: var(--text-dark);
+    }
+    .mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1100;
+      cursor: pointer;
+      font-size: 24px;
+      color: var(--text-light);
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+    .mode-toggle:hover {
+      transform: rotate(180deg);
+    }
+    body.dark .mode-toggle {
+      color: var(--text-dark);
+    }
+    .welcome {
+      background: linear-gradient(135deg, #9d70f9, #cba7ff);
+      color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      animation: fadeIn 1s ease;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    .card-action {
+      border-radius: 12px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+    .card-action:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        position: absolute;
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .content {
+        margin-left: 20px;
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-      <a class="navbar-brand" href="#">Resultify</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <?= htmlspecialchars($studentName) ?>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-              <li><a class="dropdown-item" href="#">View Profile</a></li>
-              <li><a class="dropdown-item" href="logout.php">Logout</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <i class="fas fa-bars hamburger" id="hamburger"></i>
+  <i class="fas fa-moon mode-toggle" id="modeToggle"></i>
 
-  <!-- DASHBOARD CONTENT WILL BE ADDED HERE -->
-
-
-
-
-  <div class="container py-5">
-    <h2 class="text-center mb-5 text-dark animate__animated animate__fadeInDown">🎓 Student Dashboard</h2>
-
-    <div class="row g-4">
-      <div class="col-md-8">
-        <div class="card shadow-sm mb-4 animate__animated animate__fadeInUp">
-          <div class="card-body">
-            <h4 class="mb-3">📊 Result Summary</h4>
-            <div class="table-responsive">
-              <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Subject</th>
-                    <th>Marks</th>
-                    <th>Grade</th>
-                    <th>Remarks</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php 
-                    $total = 0;
-                    $count = 0;
-                    $gpaPoints = 0;
-                    if ($result->num_rows > 0): 
-                      while($row = $result->fetch_assoc()):
-                        $subjects[] = $row['subject']; 
-                        $marks[] = $row['marks']; 
-                        $total += $row['marks'];
-                        $count++;
-                        $grade = $row['grade'];
-                        switch ($grade) {
-                          case 'A+': $gpaPoint = 4.0; break;
-                          case 'A': $gpaPoint = 3.7; break;
-                          case 'B+': $gpaPoint = 3.3; break;
-                          case 'B': $gpaPoint = 3.0; break;
-                          case 'C': $gpaPoint = 2.0; break;
-                          case 'D': $gpaPoint = 1.0; break;
-                          default: $gpaPoint = 0.0;
-                        }
-                        $gpaPoints += $gpaPoint;
-                  ?>
-                  <tr>
-                    <td><?= $row['subject'] ?></td>
-                    <td><?= $row['marks'] ?></td>
-                    <td><span class="grade-badge grade-<?= str_replace('+', 'plus', $row['grade']) ?>"><?= $row['grade'] ?></span></td>
-                    <td><?= $row['remarks'] ?></td>
-                  </tr>
-                  <?php 
-                      endwhile; 
-                      $average = $count > 0 ? $total / $count : 0;
-                      $gpa = $count > 0 ? $gpaPoints / $count : 0;
-
-                      if ($average >= 90) {
-                        $overallGrade = 'A+';
-                      } elseif ($average >= 80) {
-                        $overallGrade = 'A';
-                      } elseif ($average >= 70) {
-                        $overallGrade = 'B+';
-                      } elseif ($average >= 60) {
-                        $overallGrade = 'B';
-                      } elseif ($average >= 50) {
-                        $overallGrade = 'C';
-                      } elseif ($average >= 40) {
-                        $overallGrade = 'D';
-                      } else {
-                        $overallGrade = 'F';
-                      }
-                  ?>
-                  <tr class="table-success fw-bold">
-                    <td>Total</td>
-                    <td><?= $total ?></td>
-                    <td colspan="2">Average: <?= round($average, 2) ?> | GPA: <?= round($gpa, 2) ?> | Final Grade: <span class="grade-badge grade-<?= str_replace('+', 'plus', $overallGrade) ?>"><?= $overallGrade ?></span></td>
-                  </tr>
-                  <?php else: ?>
-                  <tr><td colspan="4">No results found.</td></tr>
-                  <?php endif; ?>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div class="card shadow-sm animate__animated animate__fadeInUp animate__delay-1s">
-          <div class="card-body">
-            <h4 class="mb-3">📈 Performance Chart</h4>
-            <canvas id="performanceChart"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="notice-board animate__animated animate__fadeInRight animate__delay-1s">
-          <h5 class="mb-3">📢 Notices</h5>
-          <div class="notice-item">Mid-term result will be published on July 1st.</div>
-          <div class="notice-item">College will remain closed on July 5th for Bhanu Jayanti.</div>
-          <div class="notice-item">Project submission deadline extended to July 10th.</div>
-        </div>
-
-        <div class="text-center mt-4 animate__animated animate__fadeInUp animate__delay-2s">
-          <a href="download_pdf.php" class="btn btn-outline-primary px-4 py-2 shadow">Download Marksheet PDF</a>
-        </div>
-      </div>
-    </div>
+  <div class="sidebar" id="sidebar">
+    <h3><i class="fas fa-user-graduate me-2"></i>Student Panel</h3>
+    <a href="view_results.php"><i class="fas fa-clipboard-list"></i> View Results</a>
+    <a href="download_transcript.php"><i class="fas fa-file-download"></i> Download Transcript</a>
+    <a href="notices.php"><i class="fas fa-bell"></i> View Notices</a>
+    <a href="update_profile.php"><i class="fas fa-user-edit"></i> Update Profile</a>
+    <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
   </div>
 
+  <div class="content">
+    <div class="welcome">
+      <h2>Welcome, <?php echo $studentName; ?> 🎓</h2>
+      <p>Here's your academic summary and quick tools.</p>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="row mt-5 g-4">
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card bg-primary text-white text-center card-action">
+          <div class="card-body">
+            <i class="fas fa-graduation-cap fa-2x"></i>
+            <h6 class="mt-2">GPA: <?= $gpa ?></h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card bg-info text-white text-center card-action">
+          <div class="card-body">
+            <i class="fas fa-book-open fa-2x"></i>
+            <h6 class="mt-2">Credits: <?= $totalCredits ?></h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card bg-success text-white text-center card-action">
+          <div class="card-body">
+            <i class="fas fa-list-ul fa-2x"></i>
+            <h6 class="mt-2">Courses: <?= $completedCourses ?></h6>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optionally Add Charts or Announcements Later -->
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    const performanceChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: <?= json_encode($subjects) ?>,
-        datasets: [{
-          label: 'Marks',
-          data: <?= json_encode($marks) ?>,
-          backgroundColor: '#7b1fa2',
-          borderRadius: 8,
-        }]
-      },
-      options: {
-        responsive: true,
-        animation: {
-          duration: 1000,
-          easing: 'easeInOutBounce'
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100
-          }
-        }
-      }
+    const sidebar = document.getElementById('sidebar');
+    document.getElementById('hamburger').addEventListener('click', () => {
+      sidebar.classList.toggle('show');
+    });
+
+    const toggle = document.getElementById('modeToggle');
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+      toggle.classList.remove('fa-moon');
+      toggle.classList.add('fa-sun');
+    }
+
+    toggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      const dark = document.body.classList.contains('dark');
+      toggle.classList.toggle('fa-sun', dark);
+      toggle.classList.toggle('fa-moon', !dark);
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
     });
   </script>
 </body>

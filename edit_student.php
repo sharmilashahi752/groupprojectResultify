@@ -5,7 +5,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
     exit();
 }
 
-$conn = new mysqli("localhost", "root", "", "resultify_db");
+include('includes/db.php');
 
 $id = intval($_GET['id'] ?? 0);
 $student = $conn->query("SELECT * FROM students WHERE id = $id")->fetch_assoc();
