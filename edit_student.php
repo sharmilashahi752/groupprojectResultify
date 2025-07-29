@@ -1,65 +1,84 @@
 <?php
 session_start();
+include 'includes/db.php';
+
+// Only Admin Access
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
     header("Location: login.php");
     exit();
 }
 
-include('includes/db.php');
-
-$id = intval($_GET['id'] ?? 0);
-$student = $conn->query("SELECT * FROM students WHERE id = $id")->fetch_assoc();
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $roll_no = $_POST['roll_no'];
-    $class = $_POST['class'];
-
-    $stmt = $conn->prepare("UPDATE students SET name=?, email=?, roll_no=?, class=? WHERE id=?");
-    $stmt->bind_param("ssssi", $name, $email, $roll_no, $class, $id);
-    $stmt->execute();
-    header("Location: view_students.php?msg=updated");
+// Get student data
+if (!isset($_GET['id'])) {
+    header("Location: view_students.php");
     exit();
 }
-?>
 
+$id = intval($_GET['id']);
+$stmt = $conn->prepare("SELECT * FROM students WHERE id = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$student = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (!$student) {
+    echo "Student not found.";
+    exit();
+}
+
+// Update student
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $roll = trim($_POST['roll_no']);
+    $dept = trim($_POST['department']);
+    $year = trim($_POST['year']);
+
+    $stmt = $conn->prepare("UPDATE students SET name=?, email=?, roll_no=?, department=?, year=? WHERE id=?");
+    if ($stmt) {
+        $stmt->bind_param("sssssi", $name, $email, $roll, $dept, $year, $id);
+        $stmt->execute();
+        $stmt->close();
+        header("Location: view_students.php?msg=updated");
+        exit();
+    } else {
+        echo "Update failed: " . $conn->error;
+    }
+}
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Edit Student | Admin</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Edit Student</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
-  <div class="container mt-5">
-    <h3 class="mb-4">✏️ Edit Student</h3>
-
-    <form method="POST">
-      <div class="mb-3">
-        <label>Name</label>
-        <input type="text" name="name" class="form-control" required value="<?= htmlspecialchars($student['name']); ?>">
-      </div>
-      <div class="mb-3">
-        <label>Email</label>
-        <input type="email" name="email" class="form-control" required value="<?= htmlspecialchars($student['email']); ?>">
-      </div>
-      <div class="mb-3">
-        <label>Roll No</label>
-        <input type="text" name="roll_no" class="form-control" required value="<?= $student['roll_no']; ?>">
-      </div>
-      <div class="mb-3">
-        <label>Class</label>
-        <select name="class" class="form-select" required>
-          <option <?= $student['class'] == 'B.Tech in CS&AI 2nd Semester' ? 'selected' : '' ?>>CS&AI 2nd Semester</option>
-          <option <?= $student['class'] == 'B.Tech in CS&AI 4th Semester' ? 'selected' : '' ?>>CS&AI 4th Semester</option>
-          <option <?= $student['class'] == 'B.Tech in IT 2nd Semester' ? 'selected' : '' ?>>BIT 2nd Semester</option>
-          <option <?= $student['class'] == 'B.Tech in IT 4th Semester' ? 'selected' : '' ?>>BIT 4th Semester</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-success">Update</button>
-      <a href="view_students.php" class="btn btn-secondary">Cancel</a>
-    </form>
-  </div>
+<div class="container mt-5">
+  <h3 class="mb-4">✏️ Edit Student</h3>
+  <form method="POST">
+    <div class="mb-3">
+      <label>Name</label>
+      <input type="text" name="name" value="<?= htmlspecialchars($student['name']); ?>" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label>Email</label>
+      <input type="email" name="email" value="<?= htmlspecialchars($student['email']); ?>" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label>Roll No</label>
+      <input type="text" name="roll_no" value="<?= htmlspecialchars($student['roll_no']); ?>" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label>Department</label>
+      <input type="text" name="department" value="<?= htmlspecialchars($student['department']); ?>" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label>Year</label>
+      <input type="text" name="year" value="<?= htmlspecialchars($student['year']); ?>" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-success">Update</button>
+    <a href="view_students.php" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
 </body>
 </html>
