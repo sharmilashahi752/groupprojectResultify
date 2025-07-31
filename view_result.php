@@ -15,19 +15,31 @@ if ($result && $result->num_rows > 0) {
     $marksResult = $conn->query($marksQuery);
     $marks = $marksResult->fetch_assoc();
 
-    // GPA Calculation: average marks divided by 20 (max GPA = 4.00)
     $subjects = ['python', 'web_tech', 'mis', 'sad', 'research'];
     $total = 0;
-    foreach ($subjects as $sub) {
-        $total += $marks[$sub];
-    }
-    $average = $total / count($subjects);
-    $gpa = round($average / 20, 2);
+    $subject_gpas = [];
+    $grades = [];
 
-    // Cap GPA at 4.00 max
-    if ($gpa > 4.00) {
-        $gpa = 4.00;
+    foreach ($subjects as $sub) {
+        $mark = $marks[$sub];
+        $total += $mark;
+
+        // Calculate GPA for each subject, capped at 4.0
+        $gpa = round(min(4, $mark / 25), 2);
+        $subject_gpas[$sub] = $gpa;
+
+        // Assign letter grade
+        if ($mark >= 90) $grades[$sub] = 'A+';
+        elseif ($mark >= 80) $grades[$sub] = 'A';
+        elseif ($mark >= 70) $grades[$sub] = 'B+';
+        elseif ($mark >= 60) $grades[$sub] = 'B';
+        elseif ($mark >= 50) $grades[$sub] = 'C+';
+        elseif ($mark >= 40) $grades[$sub] = 'C';
+        else $grades[$sub] = 'F';
     }
+
+    // Calculate overall GPA
+    $overall_gpa = round(array_sum($subject_gpas) / count($subject_gpas), 2);
 } else {
     echo "Student record not found.";
     exit();
@@ -59,6 +71,8 @@ if ($result && $result->num_rows > 0) {
                     <tr>
                         <th>Subject</th>
                         <th>Marks</th>
+                        <th>GPA</th>
+                        <th>Grade</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,13 +80,15 @@ if ($result && $result->num_rows > 0) {
                         <tr>
                             <td><?php echo strtoupper(htmlspecialchars($subject)); ?></td>
                             <td><?php echo htmlspecialchars($marks[$subject]); ?></td>
+                            <td><?php echo $subject_gpas[$subject]; ?></td>
+                            <td><?php echo $grades[$subject]; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
 
             <p><strong>Total Marks:</strong> <?php echo htmlspecialchars($total); ?></p>
-            <p><strong>GPA:</strong> <?php echo htmlspecialchars($gpa); ?> (Max 4.00)</p>
+            <p><strong>Overall GPA:</strong> <?php echo htmlspecialchars($overall_gpa); ?> / 4.00</p>
         </div>
     </div>
 

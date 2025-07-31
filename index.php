@@ -189,9 +189,12 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+   
         <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
         <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="view_notices.php">View Notices</a></li>
+
+
         <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
         <li class="nav-item toggle-dark" onclick="toggleDarkMode()">
           <i id="mode-icon" class="bi bi-sun-fill"></i>
@@ -256,7 +259,8 @@
 
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <form id="contactForm" class="bg-light p-4 rounded shadow-sm">
+       <form id="contactForm" method="POST" action="view_submit.php" class="bg-light p-4 rounded shadow-sm">
+
           <div class="mb-3">
             <label for="name" class="form-label fw-semibold">Your Name</label>
             <input type="text" name="name" class="form-control" id="name" placeholder="Enter your name" required>
@@ -347,15 +351,60 @@
     }, 300);
   }
 
+ 
+
+  AOS.init({ duration: 1000, once: true });
+
+  function toggleDarkMode() {
+    const body = document.body;
+    const icon = document.getElementById('mode-icon');
+    icon.classList.add('animate');
+    body.classList.toggle('dark-mode');
+    setTimeout(() => {
+      if (body.classList.contains('dark-mode')) {
+        icon.classList.remove('bi-sun-fill');
+        icon.classList.add('bi-moon-fill');
+      } else {
+        icon.classList.remove('bi-moon-fill');
+        icon.classList.add('bi-sun-fill');
+      }
+      icon.classList.remove('animate');
+    }, 300);
+  }
+
+  // ✅ REPLACE OLD FORM HANDLER WITH THIS
   document.getElementById('contactForm').addEventListener('submit', function (e) {
     e.preventDefault();
-    this.reset();
-    const messageBox = document.getElementById('thankYouMessage');
-    messageBox.classList.remove('d-none');
-    setTimeout(() => {
-      messageBox.classList.add('d-none');
-    }, 8000);
+
+    const form = e.target;
+    const formData = new FormData(form);
+
+    fetch('view_submit.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not OK');
+      return response.text();
+    })
+    .then(data => {
+      form.reset();
+      const messageBox = document.getElementById('thankYouMessage');
+      messageBox.classList.remove('d-none');
+      setTimeout(() => {
+        messageBox.classList.add('d-none');
+      }, 8000);
+    })
+    .catch(error => {
+      alert("There was an error submitting the form. Please try again later.");
+      console.error("Error:", error);
+    });
   });
+
+
+
+
+
 </script>
 </body>
 </html>

@@ -59,6 +59,10 @@ if ($result && $result->num_rows > 0) {
         body {
             background: linear-gradient(135deg, #f5f3ff, #e0e7ff);
             color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 40px;
         }
         .card {
             background: #fff;
@@ -72,18 +76,112 @@ if ($result && $result->num_rows > 0) {
         .btn-purple:hover {
             background-color: #5a4a82;
         }
+
+        /* Chart container */
+      .charts-wrapper {
+  max-width: 960px;
+  margin: 30px auto 0 auto;
+  padding: 20px 10px;
+}
+
+/* Flex container for pie + bar charts side by side */
+.top-charts {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+canvas {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  width: 100% !important;
+  height: auto !important;
+  max-width: 400px;
+  max-height: 300px;
+  transition: box-shadow 0.3s ease;
+}
+
+canvas:hover {
+  box-shadow: 0 0 25px rgba(0,0,0,0.2);
+}
+
+/* Slightly larger pie chart */
+#pieChart {
+  max-width: 350px;
+  max-height: 350px;
+}
+
+/* Responsive stacking on smaller screens */
+@media (max-width: 768px) {
+  .top-charts {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  canvas {
+    max-width: 90vw;
+    max-height: 350px;
+  }
+}
+
+
+        #marksChart, #gpaChart {
+            width: 350px !important;
+            height: 250px !important;
+        }
+        #pieChart {
+            width: 220px !important;
+            height: 220px !important;
+        }
+
+        /* Responsive: stack charts vertically on small screens */
+        @media (max-width: 768px) {
+            .top-charts {
+                flex-direction: column;
+                align-items: center;
+                gap: 25px;
+            }
+            #marksChart, #gpaChart, #pieChart {
+                width: 90vw !important;
+                height: auto !important;
+                max-height: 320px;
+            }
+        }
+
+        h2 {
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+            font-weight: 700;
+            color: #5a4a82;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        table {
+            margin-top: 20px;
+        }
+
+        .btn-group {
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 <div class="container mt-5 mb-5">
-    <h2 class="text-center mb-4">Lumbini Technological University<br>Student Marksheet</h2>
+    <h2 class="text-center">Lumbini Technological University<br>Student Marksheet</h2>
 
     <div class="card p-4 mb-4">
         <div class="card-body">
-            <h5>Name: <?php echo $student['name']; ?></h5>
-            <p>Roll No: <?php echo $student['roll_no']; ?> | Department: <?php echo $student['department']; ?> | Email: <?php echo $student['email']; ?></p>
+            <h5>Name: <?php echo htmlspecialchars($student['name']); ?></h5>
+            <p>Roll No: <?php echo htmlspecialchars($student['roll_no']); ?> | Department: <?php echo htmlspecialchars($student['department']); ?> | Email: <?php echo htmlspecialchars($student['email']); ?></p>
 
-            <table class="table table-bordered text-center mt-3">
+            <table class="table table-bordered text-center">
                 <thead class="table-secondary">
                     <tr>
                         <th>Subject</th>
@@ -95,19 +193,19 @@ if ($result && $result->num_rows > 0) {
                 <tbody>
                     <?php foreach ($subjects as $sub): ?>
                         <tr>
-                            <td><?php echo strtoupper($sub); ?></td>
-                            <td><?php echo $marks[$sub]; ?></td>
-                            <td><?php echo $subject_gpas[$sub]; ?></td>
-                            <td><?php echo $grades[$sub]; ?></td>
+                            <td><?php echo strtoupper(htmlspecialchars($sub)); ?></td>
+                            <td><?php echo htmlspecialchars($marks[$sub]); ?></td>
+                            <td><?php echo htmlspecialchars($subject_gpas[$sub]); ?></td>
+                            <td><?php echo htmlspecialchars($grades[$sub]); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
 
-            <p><strong>Total Marks:</strong> <?php echo $total; ?></p>
-            <p><strong>Overall GPA:</strong> <?php echo $gpa; ?> / 4</p>
+            <p class="mt-3"><strong>Total Marks:</strong> <?php echo htmlspecialchars($total); ?></p>
+            <p><strong>Overall GPA:</strong> <?php echo htmlspecialchars($gpa); ?> / 4</p>
 
-            <div class="mt-4 text-center">
+            <div class="btn-group">
                 <a href="student_dashboard.php" class="btn btn-purple">Go to Dashboard</a>
                 <a href="logout.php" class="btn btn-danger ms-2">Logout</a>
             </div>
@@ -115,20 +213,34 @@ if ($result && $result->num_rows > 0) {
     </div>
 
     <!-- 🎨 Charts Section -->
-    <div class="card p-4">
-        <h5 class="text-center">Result Visualization</h5>
-        <canvas id="marksChart" class="my-4"></canvas>
-        <canvas id="gpaChart" class="my-4"></canvas>
+    <div class="card p-4 charts-wrapper">
+        <div class="top-charts">
+            <canvas id="marksChart"></canvas>
+            <canvas id="pieChart"></canvas>
+        </div>
+        <div class="mt-4 d-flex justify-content-center">
+            <canvas id="gpaChart"></canvas>
+        </div>
     </div>
 </div>
 
 <script>
+    // Improve rendering quality for high DPI devices
+    function enhanceCanvasResolution(chart) {
+        const ctx = chart.ctx;
+        const canvas = ctx.canvas;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = canvas.clientWidth * dpr;
+        canvas.height = canvas.clientHeight * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
     const subjectLabels = <?php echo json_encode(array_map('strtoupper', $subjects)); ?>;
     const subjectMarks = <?php echo json_encode(array_map(function($s) use ($marks) { return (int)$marks[$s]; }, $subjects)); ?>;
     const subjectGPA = <?php echo json_encode(array_values($subject_gpas)); ?>;
 
     // Marks Chart (Bar)
-    new Chart(document.getElementById('marksChart'), {
+    const marksChart = new Chart(document.getElementById('marksChart'), {
         type: 'bar',
         data: {
             labels: subjectLabels,
@@ -141,12 +253,84 @@ if ($result && $result->num_rows > 0) {
         options: {
             scales: {
                 y: { beginAtZero: true, max: 100 }
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'nearest',
+                intersect: true
+            },
+            plugins: {
+                tooltip: {
+                    enabled: true,
+                    mode: 'nearest',
+                    intersect: true
+                }
             }
         }
     });
+    enhanceCanvasResolution(marksChart);
+
+    // Pie Chart (Subject-wise Marks Distribution)
+    const pieChart = new Chart(document.getElementById('pieChart'), {
+  type: 'pie',
+  data: {
+    labels: subjectLabels,
+    datasets: [{
+      label: 'Marks Distribution',
+      data: subjectMarks,
+      backgroundColor: [
+        '#6b5b95',
+        '#b8a9c9',
+        '#f67280',
+        '#355c7d',
+        '#99b898'
+      ],
+      borderColor: '#fff',
+      borderWidth: 2,
+      hoverOffset: 30,   // This makes pie slices "pop out" on hover, nicer effect
+      spacing: 5        // Space between slices
+    }]
+  },
+  options: {
+    plugins: {
+      title: {
+        display: true,
+        text: 'Subject-wise Marks Distribution',
+        font: {
+          size: 16,
+          weight: 'bold'
+        }
+      },
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: 15,
+          boxWidth: 20,
+          font: { size: 14 }
+        }
+      },
+      tooltip: {
+        enabled: true
+      }
+    },
+    responsive: true,
+    maintainAspectRatio: true,  // Let it keep aspect ratio nicely
+    animation: {
+      animateRotate: true,
+      animateScale: true
+    },
+    interaction: {
+      mode: 'nearest',
+      intersect: true
+    }
+  }
+});
+
+    enhanceCanvasResolution(pieChart);
 
     // GPA Chart (Line)
-    new Chart(document.getElementById('gpaChart'), {
+    const gpaChart = new Chart(document.getElementById('gpaChart'), {
         type: 'line',
         data: {
             labels: subjectLabels,
@@ -156,41 +340,29 @@ if ($result && $result->num_rows > 0) {
                 fill: false,
                 borderColor: '#9f5de2',
                 backgroundColor: '#9f5de2',
-                tension: 0.3
+                tension: 0.3,
+                pointHoverRadius: 7,
+                pointRadius: 5
             }]
         },
         options: {
             scales: {
                 y: { beginAtZero: true, max: 4 }
-            }
-        }
-    });
-
-    // Pie Chart (Subject-wise Marks Distribution)
-    new Chart(document.getElementById('pieChart'), {
-        type: 'pie',
-        data: {
-            labels: subjectLabels,
-            datasets: [{
-                label: 'Marks Distribution',
-                data: subjectMarks,
-                backgroundColor: ['#6b5b95', '#b8a9c9', '#f67280', '#355c7d', '#99b898'],
-                borderColor: '#fff',
-                borderWidth: 1
-            }]
-        },
-        options: {
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'nearest',
+                intersect: true
+            },
             plugins: {
-                title: {
-                    display: true,
-                    text: 'Subject-wise Marks Distribution (Pie Chart)',
-                    font: {
-                        size: 16
-                    }
+                tooltip: {
+                    enabled: true
                 }
             }
         }
     });
+    enhanceCanvasResolution(gpaChart);
 </script>
 
 </body>

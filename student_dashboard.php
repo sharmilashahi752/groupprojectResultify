@@ -100,7 +100,7 @@ $studentName = $_SESSION['user']['username'];
 
 <!-- Dashboard Cards -->
 <div class="container">
-    <h2 class="text-center dashboard-heading mb-5">Welcome, <?php echo htmlspecialchars($studentName); ?> 👋</h2>
+    <h2 class="text-center dashboard-heading mb-5">Welcome, <?php echo htmlspecialchars($studentName); ?> </h2>
 
     <div class="row g-4">
         <div class="col-md-4">

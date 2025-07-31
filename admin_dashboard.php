@@ -67,6 +67,8 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] != 'admin') {
     <a href="view_students.php">👨‍🎓 View All Students</a>
     <a href="post_notice.php">📢 Post Notice</a>
     <a href="logout.php">🚪 Logout</a>
+    <a href="view_contacts.php">📬 View Messages</a>
+
   </div>
 
   <!-- Main Content -->
