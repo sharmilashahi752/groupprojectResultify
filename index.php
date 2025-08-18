@@ -216,7 +216,7 @@
 <!-- About Section -->
 <section class="py-5 bg-white" id="about">
   <div class="container text-center" data-aos="fade-right">
-    <h2 class="section-title mb-3">What is Resultify?</h2>
+    <h2 class="section-title mb-3">What is Resultify</h2>
     <p class="text-muted">A dynamic result management system that enables real-time marksheet generation, performance tracking, and secure multi-role access for students, admin, and university staff. All in a beautiful UI.</p>
   </div>
 </section>
